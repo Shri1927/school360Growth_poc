@@ -10,15 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Users } from "lucide-react";
 
-const demoPersonas: { role: UserRole; userId: string; label: string }[] = [
-  { role: "student", userId: "usr-stu-001", label: "Aarav Sharma (Grade 10)" },
-  { role: "student", userId: "usr-stu-002", label: "Priya Nair (Grade 10)" },
-  { role: "parent", userId: "usr-par-001", label: "Rajesh Sharma (Aarav's parent)" },
-  { role: "teacher", userId: "usr-tch-001", label: "Mrs. Iyer (Math)" },
-  { role: "counsellor", userId: "usr-cou-001", label: "Dr. Desai" },
-  { role: "principal", userId: "usr-prin-001", label: "Mr. Verma" },
-  { role: "admin", userId: "usr-adm-001", label: "Platform Admin" },
+const demoPersonas: { role: UserRole; userId: string; label: string; icon: string }[] = [
+  { role: "student", userId: "usr-stu-001", label: "Aarav Sharma (Grade 10)", icon: "🎓" },
+  { role: "student", userId: "usr-stu-002", label: "Priya Nair (Grade 10)", icon: "🎓" },
+  { role: "parent", userId: "usr-par-001", label: "Rajesh Sharma (Parent)", icon: "🏠" },
+  { role: "teacher", userId: "usr-tch-001", label: "Mrs. Iyer (Math)", icon: "📚" },
+  { role: "counsellor", userId: "usr-cou-001", label: "Dr. Desai (Counsellor)", icon: "🌱" },
+  { role: "principal", userId: "usr-prin-001", label: "Mr. Verma (Principal)", icon: "🏆" },
+  { role: "admin", userId: "usr-adm-001", label: "Platform Admin", icon: "⚡" },
 ];
 
 export function RoleSwitcher() {
@@ -39,13 +40,17 @@ export function RoleSwitcher() {
         navigate(roleHomePath(role));
       }}
     >
-      <SelectTrigger className="w-[200px] h-8 text-xs">
-        <SelectValue placeholder="Switch role" />
+      <SelectTrigger className="w-[210px] h-9 text-xs font-bold uppercase tracking-wider rounded-xl border-2 border-[#e5e5e5] border-b-4 border-b-[#e5e5e5] bg-white text-[#4b4b4b] hover:bg-slate-50 transition-all">
+        <div className="flex items-center gap-1.5 overflow-hidden">
+          <Users className="size-3.5 text-[#58cc02]" />
+          <SelectValue placeholder="SWITCH ROLE" />
+        </div>
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="rounded-xl border-2 border-[#e5e5e5] border-b-4 border-b-[#e5e5e5] bg-white p-1 shadow-none">
         {demoPersonas.map((p) => (
-          <SelectItem key={p.userId} value={`${p.role}:${p.userId}`}>
-            {roleLabels[p.role]} — {p.label}
+          <SelectItem key={p.userId} value={`${p.role}:${p.userId}`} className="rounded-lg font-bold text-xs py-2 hover:bg-[#eefce8] hover:text-[#58cc02]">
+            <span className="mr-1.5">{p.icon}</span>
+            <span>{roleLabels[p.role].toUpperCase()} — {p.label}</span>
           </SelectItem>
         ))}
       </SelectContent>

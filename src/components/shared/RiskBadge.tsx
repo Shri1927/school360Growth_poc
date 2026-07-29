@@ -4,20 +4,20 @@ import { cn } from "@/lib/utils";
 type RiskLevel = "low" | "medium" | "high";
 
 const styles: Record<RiskLevel, string> = {
-  low: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  medium: "bg-amber-100 text-amber-900 border-amber-200",
-  high: "bg-rose-100 text-rose-800 border-rose-200",
+  low: "bg-[#eefce8] text-[#58cc02] border-[#a5ed6e]",
+  medium: "bg-[#fffbeb] text-[#d97706] border-[#fde68a]",
+  high: "bg-[#fff0f0] text-[#ff4b4b] border-[#ff4b4b]",
 };
 
 const labels: Record<RiskLevel, string> = {
-  low: "Low priority",
-  medium: "Medium priority",
-  high: "High priority",
+  low: "On Track",
+  medium: "Needs Focus",
+  high: "Action Needed",
 };
 
 export function RiskBadge({ level, className }: { level: RiskLevel; className?: string }) {
   return (
-    <Badge variant="outline" className={cn("font-normal", styles[level], className)}>
+    <Badge className={cn("font-bold uppercase tracking-wider text-[11px]", styles[level], className)}>
       {labels[level]}
     </Badge>
   );
