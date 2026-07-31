@@ -27,6 +27,7 @@ export const navByRole: Record<UserRole, NavItem[]> = {
   ],
   teacher: [
     { label: "Dashboard", path: "/teacher" },
+    { label: "AI Assistant", path: "/teacher/ai-assistant" },
     { label: "Interventions", path: "/teacher/interventions" },
     { label: "Analytics", path: "/teacher/analytics" },
   ],

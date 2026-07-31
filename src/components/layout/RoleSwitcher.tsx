@@ -28,6 +28,7 @@ export function RoleSwitcher() {
   const navigate = useNavigate();
 
   const value = session ? `${session.role}:${session.userId}` : "";
+  const isStudent = session?.role === "student";
 
   return (
     <Select
@@ -40,15 +41,21 @@ export function RoleSwitcher() {
         navigate(roleHomePath(role));
       }}
     >
-      <SelectTrigger className="w-[210px] h-9 text-xs font-bold uppercase tracking-wider rounded-xl border-2 border-[#e5e5e5] border-b-4 border-b-[#e5e5e5] bg-white text-[#4b4b4b] hover:bg-slate-50 transition-all">
+      <SelectTrigger
+        className={`w-[210px] h-9 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${
+          isStudent
+            ? "border-2 border-[#e5e5e5] border-b-4 border-b-[#e5e5e5] bg-white text-[#4b4b4b] hover:bg-slate-50"
+            : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+        }`}
+      >
         <div className="flex items-center gap-1.5 overflow-hidden">
-          <Users className="size-3.5 text-[#58cc02]" />
+          <Users className={`size-3.5 ${isStudent ? "text-[#58cc02]" : "text-slate-700"}`} />
           <SelectValue placeholder="SWITCH ROLE" />
         </div>
       </SelectTrigger>
-      <SelectContent className="rounded-xl border-2 border-[#e5e5e5] border-b-4 border-b-[#e5e5e5] bg-white p-1 shadow-none">
+      <SelectContent className="rounded-xl border border-slate-200 bg-white p-1 shadow-md">
         {demoPersonas.map((p) => (
-          <SelectItem key={p.userId} value={`${p.role}:${p.userId}`} className="rounded-lg font-bold text-xs py-2 hover:bg-[#eefce8] hover:text-[#58cc02]">
+          <SelectItem key={p.userId} value={`${p.role}:${p.userId}`} className="rounded-lg font-semibold text-xs py-2 hover:bg-slate-100 hover:text-slate-900">
             <span className="mr-1.5">{p.icon}</span>
             <span>{roleLabels[p.role].toUpperCase()} — {p.label}</span>
           </SelectItem>

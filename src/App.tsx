@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Landing } from "@/routes/Landing";
+import { Login } from "@/routes/Login";
 import { ProtectedLayout, RoleGuard } from "@/routes/ProtectedLayout";
 import { StudentDashboard } from "@/routes/student/StudentDashboard";
 import { StudentAcademics } from "@/routes/student/StudentAcademics";
@@ -17,6 +18,7 @@ import { ParentFeedback } from "@/routes/parent/ParentFeedback";
 import { ParentMeetings } from "@/routes/parent/ParentMeetings";
 import { ParentReport } from "@/routes/parent/ParentReport";
 import { TeacherDashboard } from "@/routes/teacher/TeacherDashboard";
+import { TeacherAiAssistant } from "@/routes/teacher/TeacherAiAssistant";
 import { TeacherClassRoster } from "@/routes/teacher/TeacherClassRoster";
 import { TeacherStudentDetail } from "@/routes/teacher/TeacherStudentDetail";
 import { TeacherInterventions } from "@/routes/teacher/TeacherInterventions";
@@ -35,6 +37,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
       <Route element={<ProtectedLayout />}>
         <Route
           path="/student"
@@ -61,6 +64,7 @@ export default function App() {
         <Route path="/parent/report" element={<RoleGuard role="parent"><ParentReport /></RoleGuard>} />
 
         <Route path="/teacher" element={<RoleGuard role="teacher"><TeacherDashboard /></RoleGuard>} />
+        <Route path="/teacher/ai-assistant" element={<RoleGuard role="teacher"><TeacherAiAssistant /></RoleGuard>} />
         <Route path="/teacher/classes/:classId" element={<RoleGuard role="teacher"><TeacherClassRoster /></RoleGuard>} />
         <Route path="/teacher/students/:studentId" element={<RoleGuard role="teacher"><TeacherStudentDetail /></RoleGuard>} />
         <Route path="/teacher/interventions" element={<RoleGuard role="teacher"><TeacherInterventions /></RoleGuard>} />

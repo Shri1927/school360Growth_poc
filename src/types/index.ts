@@ -195,7 +195,7 @@ export interface InterventionPlan {
   topic: string;
   action: string;
   targetDate: string;
-  status: "active" | "completed";
+  status: "active" | "in-progress" | "completed";
   createdAt: string;
 }
 
