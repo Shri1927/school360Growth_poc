@@ -1,3 +1,8 @@
+import pythagorasVideo from "../videos/Pythagoras_Theorem_.mp4";
+import quadraticVideo from "../videos/Quadratic_Equations_.mp4";
+import photosynthesisVideo from "../videos/photosynthesis.mp4";
+import newtonVideo from "../videos/Newton_s_Laws_of_Moti.mp4";
+
 export interface TeachingTechnique {
   id: string;
   title: string;
@@ -19,6 +24,7 @@ export interface MediaResource {
   thumbnailBadge: string;
   videoVariant?: "pythagoras" | "quadratic" | "photosynthesis" | "newton" | "generic";
   diagramSvgType?: string;
+  videoUrl?: string;
 }
 
 export interface DocumentResource {
@@ -132,6 +138,7 @@ export const TOPIC_AI_DATABASE: TopicAiResource[] = [
         caption: "Micro-animation showing 9 red squares and 16 blue squares merging into 25 purple squares on the hypotenuse.",
         thumbnailBadge: "15s Explainer Video",
         videoVariant: "pythagoras",
+        videoUrl: pythagorasVideo,
       },
       {
         id: "media-pyth-2",
@@ -151,6 +158,7 @@ export const TOPIC_AI_DATABASE: TopicAiResource[] = [
         caption: "Short motion graphic demonstrating height calculation of a leaning ladder in emergency rescue.",
         thumbnailBadge: "20s Real-World Demo",
         videoVariant: "pythagoras",
+        videoUrl: pythagorasVideo,
       },
     ],
     documents: [
@@ -293,6 +301,7 @@ export const TOPIC_AI_DATABASE: TopicAiResource[] = [
         caption: "Interactive curve animation displaying vertex shift and x-intercept roots as D changes value.",
         thumbnailBadge: "12s Parabola Animation",
         videoVariant: "quadratic",
+        videoUrl: quadraticVideo,
       },
       {
         id: "media-quad-2",
@@ -387,6 +396,7 @@ export const TOPIC_AI_DATABASE: TopicAiResource[] = [
         caption: "Visual showing photons splitting water molecules to release oxygen inside thylakoid membranes.",
         thumbnailBadge: "18s Animated Cell Bio",
         videoVariant: "photosynthesis",
+        videoUrl: photosynthesisVideo,
       },
       {
         id: "media-photo-2",
@@ -477,6 +487,7 @@ export const TOPIC_AI_DATABASE: TopicAiResource[] = [
         caption: "Animated physics simulation showing downward gas momentum creating upward rocket acceleration.",
         thumbnailBadge: "16s Rocket Physics Video",
         videoVariant: "newton",
+        videoUrl: newtonVideo,
       },
       {
         id: "media-newt-2",

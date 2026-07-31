@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import {
   searchAiTopics,
   generateCustomTopicAiResource,
 } from "@/data/teacherAiData";
-import type { TopicAiResource, DocumentResource } from "@/data/teacherAiData";
+import type { TopicAiResource, DocumentResource, MediaResource } from "@/data/teacherAiData";
 import {
   Sparkles,
   Search,
@@ -41,10 +41,13 @@ import { toast } from "sonner";
 export function TeacherAiAssistant() {
   const [searchQuery, setSearchQuery] = useState("Pythagoras Theorem");
   const [activeTopic, setActiveTopic] = useState<TopicAiResource>(TOPIC_AI_DATABASE[0]);
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState("techniques");
   const [animDirection, setAnimDirection] = useState<"next" | "prev">("next");
   const [animKey, setAnimKey] = useState(0);
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const sections = [
     { id: "techniques", label: "Teaching Methods", num: 1, icon: Lightbulb },
@@ -80,6 +83,8 @@ export function TeacherAiAssistant() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
 
+  const currentMedia: MediaResource = activeTopic.media[selectedMediaIndex] || activeTopic.media[0];
+
   // Document modal preview state
   const [selectedDoc, setSelectedDoc] = useState<DocumentResource | null>(null);
 
@@ -99,6 +104,7 @@ export function TeacherAiAssistant() {
     const found = TOPIC_AI_DATABASE.find((t) => t.id === id);
     if (found) {
       setActiveTopic(found);
+      setSelectedMediaIndex(0);
       setSearchQuery(found.topicName);
       setVideoProgress(0);
       setIsPlaying(false);
@@ -112,6 +118,9 @@ export function TeacherAiAssistant() {
     const matches = searchAiTopics(searchQuery);
     if (matches.length > 0) {
       setActiveTopic(matches[0]);
+      setSelectedMediaIndex(0);
+      setIsPlaying(false);
+      setVideoProgress(0);
       toast.success(`Loaded AI package for ${matches[0].topicName}`);
     } else {
       // Simulate AI generation for custom topic
@@ -120,16 +129,34 @@ export function TeacherAiAssistant() {
       setTimeout(() => {
         const customRes = generateCustomTopicAiResource(searchQuery);
         setActiveTopic(customRes);
+        setSelectedMediaIndex(0);
         setIsGenerating(false);
+        setIsPlaying(false);
+        setVideoProgress(0);
         toast.success(`AI Teaching Package generated for "${searchQuery}"!`);
       }, 1200);
     }
   };
 
-  // Video Animation loop simulation
+  // Toggle video play/pause
+  const togglePlayPause = () => {
+    if (currentMedia?.videoUrl && videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        videoRef.current.play().catch((err) => console.log("Autoplay issue:", err));
+        setIsPlaying(true);
+      }
+    } else {
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  // Video Animation loop simulation for SVG fallback
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
-    if (isPlaying) {
+    if (isPlaying && !currentMedia?.videoUrl) {
       interval = setInterval(() => {
         setVideoProgress((prev) => {
           if (prev >= 100) {
@@ -138,10 +165,10 @@ export function TeacherAiAssistant() {
           }
           return prev + 5;
         });
-      }, 750); // 100% in 15 seconds
+      }, 750);
     }
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, currentMedia?.videoUrl]);
 
   const togglePyqSolution = (pyqId: string) => {
     setExpandedPyqIds((prev) => ({
@@ -333,27 +360,45 @@ export function TeacherAiAssistant() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Video className="size-4 text-amber-400" />
-                <CardTitle className="text-sm font-bold">10s-20s Visual Explainer Video</CardTitle>
+                <CardTitle className="text-sm font-bold">{currentMedia?.title || "Visual Explainer Video"}</CardTitle>
               </div>
               <Badge className="bg-amber-400 text-slate-950 font-bold text-[10px]">
-                {activeTopic.media[0]?.thumbnailBadge || "15s Visual Proof"}
+                {currentMedia?.thumbnailBadge || "15s Visual Video"}
               </Badge>
             </div>
           </CardHeader>
 
           <CardContent className="p-0 bg-slate-950 text-white flex-1 flex flex-col justify-between">
-            {/* Interactive Canvas/SVG Video Simulation Container */}
-            <div className="relative w-full h-52 bg-gradient-to-b from-slate-900 to-slate-950 flex flex-col items-center justify-center p-4 overflow-hidden select-none">
-              {/* Pythagoras Animated Graphic */}
-              {activeTopic.id === "topic-pythagoras-theorem" ? (
-                <div className="relative flex flex-col items-center justify-center w-full h-full">
+            {/* Real HTML5 Video Player or SVG Simulation Container */}
+            <div className="relative w-full h-56 bg-slate-950 flex flex-col items-center justify-center overflow-hidden select-none group">
+              {currentMedia?.videoUrl ? (
+                <video
+                  ref={videoRef}
+                  src={currentMedia.videoUrl}
+                  className="w-full h-full object-cover"
+                  playsInline
+                  controls
+                  onTimeUpdate={() => {
+                    if (videoRef.current && videoRef.current.duration) {
+                      setVideoProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
+                    }
+                  }}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onEnded={() => {
+                    setIsPlaying(false);
+                    setVideoProgress(0);
+                  }}
+                />
+              ) : activeTopic.id === "topic-pythagoras-theorem" ? (
+                <div className="relative flex flex-col items-center justify-center w-full h-full p-4">
                   <svg viewBox="0 0 300 180" className="w-full h-full max-h-40">
                     {/* Right triangle */}
                     <polygon points="90,140 210,140 90,60" fill="none" stroke="#6366f1" strokeWidth="4" />
                     {/* Right angle indicator */}
                     <polyline points="90,130 100,130 100,140" fill="none" stroke="#a5b4fc" strokeWidth="2" />
 
-                    {/* Square Leg A (Left 80px) */}
+                    {/* Square Leg A */}
                     <rect
                       x="10"
                       y="60"
@@ -368,7 +413,7 @@ export function TeacherAiAssistant() {
                       a² (9)
                     </text>
 
-                    {/* Square Leg B (Bottom 120px) */}
+                    {/* Square Leg B */}
                     <rect
                       x="90"
                       y="140"
@@ -400,23 +445,27 @@ export function TeacherAiAssistant() {
                       Transferring Areas (a² + b² → c²)...
                     </div>
                   )}
+                  <button
+                    onClick={togglePlayPause}
+                    className="absolute inset-0 m-auto size-12 rounded-full bg-indigo-600/90 hover:bg-indigo-500 text-white flex items-center justify-center shadow-lg transition-transform active:scale-95 z-10"
+                  >
+                    {isPlaying ? <Pause className="size-5 fill-white" /> : <Play className="size-5 fill-white ml-0.5" />}
+                  </button>
                 </div>
               ) : (
                 /* Generic/Other Topic Graphic */
                 <div className="flex flex-col items-center justify-center text-center p-4">
                   <Layers className="size-12 text-indigo-400 mb-2 animate-pulse" />
-                  <span className="text-xs font-bold text-indigo-200">{activeTopic.media[0]?.title}</span>
-                  <span className="text-[11px] text-slate-400 mt-1">{activeTopic.media[0]?.caption}</span>
+                  <span className="text-xs font-bold text-indigo-200">{currentMedia?.title}</span>
+                  <span className="text-[11px] text-slate-400 mt-1">{currentMedia?.caption}</span>
+                  <button
+                    onClick={togglePlayPause}
+                    className="mt-3 size-10 rounded-full bg-indigo-600/90 hover:bg-indigo-500 text-white flex items-center justify-center shadow-lg transition-transform active:scale-95"
+                  >
+                    {isPlaying ? <Pause className="size-4 fill-white" /> : <Play className="size-4 fill-white ml-0.5" />}
+                  </button>
                 </div>
               )}
-
-              {/* Video Play/Pause Overlay Button */}
-              <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="absolute inset-0 m-auto size-12 rounded-full bg-indigo-600/90 hover:bg-indigo-500 text-white flex items-center justify-center shadow-lg transition-transform active:scale-95"
-              >
-                {isPlaying ? <Pause className="size-5 fill-white" /> : <Play className="size-5 fill-white ml-0.5" />}
-              </button>
             </div>
 
             {/* Video Controls & Progress */}
@@ -432,18 +481,27 @@ export function TeacherAiAssistant() {
                   onClick={() => {
                     setIsPlaying(false);
                     setVideoProgress(0);
+                    if (videoRef.current) {
+                      videoRef.current.currentTime = 0;
+                      videoRef.current.pause();
+                    }
                   }}
                   className="flex items-center gap-1 hover:text-white"
                 >
                   <RotateCcw className="size-3" /> Reset
                 </button>
                 <span className="font-mono text-[11px] text-indigo-300 font-bold">
-                  0:0{Math.floor((videoProgress / 100) * (activeTopic.media[0]?.durationSec || 15))} / 0:
-                  {activeTopic.media[0]?.durationSec || 15}s
+                  {currentMedia?.videoUrl && videoRef.current
+                    ? `0:${Math.floor(videoRef.current.currentTime).toString().padStart(2, "0")} / 0:${Math.floor(
+                        videoRef.current.duration || currentMedia.durationSec || 15
+                      ).toString().padStart(2, "0")}s`
+                    : `0:0${Math.floor((videoProgress / 100) * (currentMedia?.durationSec || 15))} / 0:${
+                        currentMedia?.durationSec || 15
+                      }s`}
                 </span>
               </div>
               <p className="text-[11px] text-slate-300 line-clamp-2 italic pt-1">
-                "{activeTopic.media[0]?.caption}"
+                "{currentMedia?.caption}"
               </p>
             </div>
           </CardContent>
@@ -600,21 +658,42 @@ export function TeacherAiAssistant() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {activeTopic.media.map((med) => (
-              <Card key={med.id} className="rounded-2xl border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
-                <div className="relative bg-slate-900 text-white p-4 h-36 flex flex-col items-center justify-center text-center">
-                  <Badge className="absolute top-2 right-2 bg-indigo-600 text-white font-bold text-[10px]">
+            {activeTopic.media.map((med, mIdx) => (
+              <Card key={med.id} className="rounded-2xl border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between group hover:border-indigo-300 transition-all">
+                <div className="relative bg-slate-900 text-white h-44 flex flex-col items-center justify-center text-center overflow-hidden">
+                  <Badge className="absolute top-2 right-2 bg-indigo-600 text-white font-bold text-[10px] z-10 shadow-md">
                     {med.thumbnailBadge}
                   </Badge>
+
                   {med.type === "video" ? (
-                    <div className="flex flex-col items-center">
-                      <div className="size-10 rounded-full bg-white/20 flex items-center justify-center mb-1">
-                        <Play className="size-5 fill-white text-white ml-0.5" />
+                    med.videoUrl ? (
+                      <div className="relative w-full h-full bg-slate-950 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                        <video
+                          src={med.videoUrl}
+                          preload="metadata"
+                          muted
+                          playsInline
+                          className="w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-opacity"
+                        />
+                        <div className="absolute inset-0 bg-slate-950/30 flex flex-col items-center justify-center p-2">
+                          <div className="size-11 rounded-full bg-indigo-600/90 group-hover:bg-indigo-500 flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 mb-1">
+                            <Play className="size-5 fill-white text-white ml-0.5" />
+                          </div>
+                          <span className="text-xs font-extrabold text-amber-300 drop-shadow-md">
+                            {med.durationSec || 15}s MP4 Video
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-xs font-bold text-amber-300">{med.durationSec} Seconds Clip</span>
-                    </div>
+                    ) : (
+                      <div className="flex flex-col items-center p-4">
+                        <div className="size-10 rounded-full bg-white/20 flex items-center justify-center mb-1">
+                          <Play className="size-5 fill-white text-white ml-0.5" />
+                        </div>
+                        <span className="text-xs font-bold text-amber-300">{med.durationSec} Seconds Clip</span>
+                      </div>
+                    )
                   ) : (
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center p-4">
                       <Eye className="size-8 text-indigo-300 mb-1" />
                       <span className="text-xs font-bold text-indigo-200">High-Res Diagram</span>
                     </div>
@@ -627,14 +706,19 @@ export function TeacherAiAssistant() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full mt-2 text-xs border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-bold"
+                    className="w-full mt-2 text-xs border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-bold gap-1.5"
                     onClick={() => {
+                      setSelectedMediaIndex(mIdx);
                       setIsPlaying(true);
                       window.scrollTo({ top: 120, behavior: "smooth" });
-                      toast.success(`Playing "${med.title}" in top player`);
+                      if (med.videoUrl && videoRef.current) {
+                        videoRef.current.currentTime = 0;
+                        videoRef.current.play().catch(() => {});
+                      }
+                      toast.success(`Loaded "${med.title}" into main video player`);
                     }}
                   >
-                    Play in Top Player
+                    <Play className="size-3.5 fill-indigo-700" /> Play Video in Main Viewer
                   </Button>
                 </CardContent>
               </Card>
